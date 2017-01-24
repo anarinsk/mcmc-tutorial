@@ -64,95 +64,106 @@ gaussian.plot = ggplot(data = grid, aes(x = x, y = y)) + geom_raster(aes(fill = 
 
 gaussian.plot
 
+library(dplyr)
 
 ## @knitr MH
 maxit = 50
-
-samples = matrix(NA, nrow = maxit, ncol = 2, dimnames = list(NULL, c("x", "y")))
-samples[1, ] = c(0,0) # start at 0,0
+samples = tibble(
+  x = rep(NA, maxit), 
+  y = rep(NA, maxit)
+)
+samples[1,] <- c(0,0) # start at 0,0
 
 for(i in 2:maxit){
   
   # propose a new sample point
-  proposal = samples[i - 1, ] + rnorm(2, mean = 0, sd = 1)
+  proposal <- samples[i - 1, ] + rnorm(2, mean = 0, sd = 1)
 
   # Compare its likelihood with the current position
-  old.lik = lik(samples[i - 1, "x"], samples[i - 1, "y"])
-  new.lik = lik(proposal["x"], proposal["y"])
+  old.lik <- lik(samples[i - 1, ]$x, samples[i - 1, ]$y)
+  new.lik = lik(proposal[[1]], proposal[[2]])
   
   ratio = new.lik / old.lik
   
   # flip a coin and accept the new proposal with probability min(ratio, 1)
   if(rbinom(1, size = 1, prob = min(ratio, 1))){
-    samples[i, ] = proposal
+    samples[i, ] <- proposal
   }else{
     # If you don't accept the proposal, just keep what you had in the last time step
-    samples[i, ] = samples[i - 1, ]
+    samples[i, ] <- samples[i - 1, ]
   }
     
 }
 
-
-gaussian.plot + geom_path(mapping = aes(x = samples[,"x"], y = samples[,"y"]), color = "orange") + geom_point(mapping = aes(x = samples[,"x"], y = samples[,"y"]))
-
+gaussian.plot + 
+  geom_path(data = samples, mapping = aes(x = x, y = y), color = "orange") +
+  geom_point(data = samples, mapping = aes(x = x, y = y))
 
 ## @knitr MH2
-maxit = 50
-
-samples = matrix(NA, nrow = maxit, ncol = 2, dimnames = list(NULL, c("x", "y")))
-samples[1, ] = c(0,0) # start at 0,0
+maxit <- 500
+samples <- tibble(
+  x = rep(NA, maxit), 
+  y = rep(NA, maxit)
+)
+samples[1,] <- c(0,0) # start at 0,0
 
 for(i in 2:maxit){
   
   # propose a new sample point
-  proposal = samples[i - 1, ] + rnorm(2, mean = 0, sd = 1)
-
+  proposal <- samples[i - 1, ] + rnorm(2, mean = 0, sd = 1)
+  
   # Compare its likelihood with the current position
-  old.lik = lik(samples[i - 1, "x"], samples[i - 1, "y"])
-  new.lik = lik(proposal["x"], proposal["y"])
+  old.lik <- lik(samples[i - 1, ]$x, samples[i - 1, ]$y)
+  new.lik = lik(proposal[[1]], proposal[[2]])
   
   ratio = new.lik / old.lik
   
   # flip a coin and accept the new proposal with probability min(ratio, 1)
   if(rbinom(1, size = 1, prob = min(ratio, 1))){
-    samples[i, ] = proposal
+    samples[i, ] <- proposal
   }else{
-    samples[i, ] = samples[i - 1, ]
+    # If you don't accept the proposal, just keep what you had in the last time step
+    samples[i, ] <- samples[i - 1, ]
   }
-    
+  
 }
 
-
-gaussian.plot + geom_path(mapping = aes(x = samples[,"x"], y = samples[,"y"]), color = "orange") + geom_point(mapping = aes(x = samples[,"x"], y = samples[,"y"]))
-
+gaussian.plot + 
+  geom_path(data = samples, mapping = aes(x = x, y = y), color = "orange") +
+  geom_point(data = samples, mapping = aes(x = x, y = y))
 
 ## @knitr MH3
 maxit = 10000
-
-samples = matrix(NA, nrow = maxit, ncol = 2, dimnames = list(NULL, c("x", "y")))
-samples[1, ] = c(0,0) # start at 0,0
+samples <- tibble(
+  x = rep(NA, maxit), 
+  y = rep(NA, maxit)
+)
+samples[1,] <- c(0,0) # start at 0,0
 
 for(i in 2:maxit){
   
   # propose a new sample point
-  proposal = samples[i - 1, ] + rnorm(2, mean = 0, sd = 1)
-
+  proposal <- samples[i - 1, ] + rnorm(2, mean = 0, sd = 1)
+  
   # Compare its likelihood with the current position
-  old.lik = lik(samples[i - 1, "x"], samples[i - 1, "y"])
-  new.lik = lik(proposal["x"], proposal["y"])
+  old.lik <- lik(samples[i - 1, ]$x, samples[i - 1, ]$y)
+  new.lik = lik(proposal[[1]], proposal[[2]])
   
   ratio = new.lik / old.lik
   
   # flip a coin and accept the new proposal with probability min(ratio, 1)
   if(rbinom(1, size = 1, prob = min(ratio, 1))){
-    samples[i, ] = proposal
+    samples[i, ] <- proposal
   }else{
-    samples[i, ] = samples[i - 1, ]
+    # If you don't accept the proposal, just keep what you had in the last time step
+    samples[i, ] <- samples[i - 1, ]
   }
-    
+  
 }
 
-
-ggplot(data = NULL, mapping = aes(x = samples[,"x"], y = samples[,"y"])) + stat_density2d(geom = "tile", aes(fill = ..density..), contour = FALSE) + scale_fill_gradient2() + xlim(-6,6) + ylim(-6,6) + coord_equal()
+ggplot(data = samples, mapping = aes(x = x, y = y)) + 
+  stat_density2d(geom = "tile", aes(fill = ..density..), contour = FALSE) + 
+  scale_fill_gradient2() + xlim(-6,6) + ylim(-6,6) + 
+  coord_equal()
 
 
